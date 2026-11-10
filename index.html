@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IAM Lab From Zero To Hero</title>
+  <meta name="description" content="A hands-on Identity and Access Management lab: real Active Directory, Entra ID and Okta, five portfolio projects, and a path to your first IAM job." />
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+</head>
+<body>
+  <a class="skip" href="#main">Skip to the lesson</a>
+
+  <!-- The classroom wall: the one loud thing on the page -->
+  <header class="wall">
+    <div class="board">
+      <div class="board__surface">
+        <p class="board__date">Lesson 0: identity is the new perimeter</p>
+        <h1 id="board-title" class="chalk chalk--title"><span class="write">IAM Lab:</span> <span class="write write--2">from zero to hero</span></h1>
+        <p id="board-sub" class="chalk board__sub">
+          Build a real company directory, run real joiners, movers and leavers,
+          and watch them reach Entra ID and Okta. Five projects. One portfolio.
+        </p>
+
+        <svg class="board__diagram" viewBox="0 0 520 250" aria-hidden="true">
+          <defs>
+            <filter id="chalky" x="-5%" y="-5%" width="110%" height="110%">
+              <feTurbulence type="fractalNoise" baseFrequency="0.9" numOctaves="2" seed="3" />
+              <feDisplacementMap in="SourceGraphic" scale="2.2" />
+            </filter>
+            <marker id="tip" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+              <path d="M0 0 L10 5 L0 10" fill="none" stroke="#eef0ea" stroke-width="1.6" />
+            </marker>
+          </defs>
+          <g filter="url(#chalky)" fill="none" stroke="#eef0ea" stroke-width="2" stroke-linecap="round">
+            <rect x="12" y="98" width="96" height="54" rx="6" />
+            <rect x="170" y="98" width="128" height="54" rx="6" />
+            <rect x="372" y="28" width="132" height="54" rx="6" />
+            <rect x="372" y="168" width="132" height="54" rx="6" />
+            <path d="M110 125 L166 125" marker-end="url(#tip)" />
+            <path d="M300 116 C330 90, 340 62, 368 56" marker-end="url(#tip)" />
+            <path d="M300 136 C330 160, 340 188, 368 194" marker-end="url(#tip)" />
+          </g>
+          <g class="chalk-svg-text" filter="url(#chalky)">
+            <text x="60" y="131" text-anchor="middle">HR feed</text>
+            <text x="234" y="122" text-anchor="middle">Active</text>
+            <text x="234" y="143" text-anchor="middle">Directory</text>
+            <text x="438" y="61" text-anchor="middle">Entra ID</text>
+            <text x="438" y="201" text-anchor="middle">Okta</text>
+            <text x="138" y="112" text-anchor="middle" class="tiny">CSV</text>
+            <text x="330" y="70" text-anchor="middle" class="tiny">sync</text>
+            <text x="330" y="196" text-anchor="middle" class="tiny">API</text>
+            <text x="234" y="186" text-anchor="middle" class="tiny">joiner, mover, leaver</text>
+          </g>
+        </svg>
+      </div>
+      <div class="board__tray">
+        <a class="chalkstick" href="https://github.com/pitchiluxe/iam-lab-from-zero-to-hero/blob/main/MANUAL.md">Read the setup manual</a>
+        <a class="chalkstick chalkstick--yellow" href="#contact-title">Ask for access</a>
+        <span class="eraser" aria-hidden="true"></span>
+      </div>
+    </div>
+
+    <!-- Corkboard of quotes -->
+    <section class="cork" aria-labelledby="quotes-title">
+      <h2 id="quotes-title" class="visually-hidden">Words to remember</h2>
+      <figure class="note note--yellow">
+        <blockquote>Every program and every user of the system should operate using the least set of privileges necessary to complete the job.</blockquote>
+        <figcaption>Saltzer &amp; Schroeder, 1975</figcaption>
+      </figure>
+      <figure class="note note--blue">
+        <blockquote>Never trust, always verify.</blockquote>
+        <figcaption>The Zero Trust motto, John Kindervag</figcaption>
+      </figure>
+      <figure class="note note--pink">
+        <blockquote>Amateurs hack systems, professionals hack people.</blockquote>
+        <figcaption>Bruce Schneier</figcaption>
+      </figure>
+      <figure class="note note--green">
+        <blockquote>Attackers don't break in. They log in.</blockquote>
+        <figcaption>A saying every IAM team repeats</figcaption>
+      </figure>
+      <figure class="note note--yellow">
+        <blockquote>Security is a process, not a product.</blockquote>
+        <figcaption>Bruce Schneier</figcaption>
+      </figure>
+      <figure class="note note--white">
+        <blockquote>Disable on the last day. Delete only after the audit.</blockquote>
+        <figcaption>Rule 3 of this lab</figcaption>
+      </figure>
+    </section>
+  </header>
+
+  <main id="main" class="book">
+
+    <!-- What the course is -->
+    <section class="page" aria-labelledby="about-title">
+      <h2 id="about-title" class="hand">What this lab is</h2>
+      <p>
+        Most people trying to get into Identity &amp; Access Management have read about it.
+        Very few have done it. This lab gives you a computer of your own, with a real
+        Active Directory domain on it, and walks you through the work an IAM analyst does
+        in the first year: onboarding people, moving them, offboarding them, reviewing who
+        has access to what, and writing it all down so an auditor would accept it.
+      </p>
+      <p>
+        You connect your own free Microsoft Entra ID tenant and your own Okta org, so the
+        changes you make in Active Directory show up in the cloud, the way they do at real
+        companies. A local AI instructor runs on the same computer and helps with PowerShell
+        when you get stuck. Nothing leaves your machine unless you send it.
+      </p>
+      <aside class="margin-note">Runs on a Windows PC with 14&nbsp;GB of memory. The software is free; real Conditional Access needs a paid Entra licence.</aside>
+    </section>
+
+    <!-- Syllabus: a real sequence, so it is numbered -->
+    <section class="page" aria-labelledby="syllabus-title">
+      <h2 id="syllabus-title" class="hand">Syllabus</h2>
+      <ol class="syllabus">
+        <li value="0">
+          <h3>Foundations</h3>
+          <p>Why identity became the perimeter, the vocabulary interviewers expect, and a tour of the lab.</p>
+        </li>
+        <li value="1">
+          <h3>Active Directory and automated lifecycle</h3>
+          <p>Build the OU and group structure, then run real joiner, mover and leaver scripts from an HR feed.</p>
+          <p class="proof">You keep: the PowerShell, the run logs, the audit trail.</p>
+        </li>
+        <li value="2">
+          <h3>Conditional Access framework</h3>
+          <p>Design MFA, device and location policies in Entra ID, with a business reason written for every one.</p>
+          <p class="proof">You keep: a policy framework document a manager could sign.</p>
+        </li>
+        <li value="3">
+          <h3>Access review and recertification</h3>
+          <p>Find stale accounts, over-privileged users and role creep, and decide certify, modify or revoke.</p>
+          <p class="proof">You keep: an audit report with the reason for each decision.</p>
+        </li>
+        <li value="4">
+          <h3>Non-human identities</h3>
+          <p>Service accounts, app registrations, API keys: who owns them, when they rotate, whether they are still needed.</p>
+          <p class="proof">You keep: an inventory and a remediation plan.</p>
+        </li>
+        <li value="5">
+          <h3>AD, Entra ID and Okta side by side</h3>
+          <p>One person, three platforms: how each creates users, enforces MFA and handles a leaver.</p>
+          <p class="proof">You keep: a comparison and your recommendation.</p>
+        </li>
+      </ol>
+    </section>
+
+    <!-- Real screenshots, taped in -->
+    <section class="page page--photos" aria-labelledby="photos-title">
+      <h2 id="photos-title" class="hand">What it looks like</h2>
+      <div class="photos">
+        <figure class="photo photo--a">
+          <img src="img/04-real-lab.png" alt="The Real Lab page: live status of Active Directory, Entra ID and Okta, the script catalog and real PowerShell output" loading="lazy" width="1440" height="1100" />
+          <figcaption>The Real Lab: scripts change the real directory, with a preview first.</figcaption>
+        </figure>
+        <figure class="photo photo--b">
+          <img src="img/07-conditional-access.png" alt="The Conditional Access designer with policies, business justifications and a what-if test" loading="lazy" width="1440" height="1200" />
+          <figcaption>Project 2: every policy needs a reason before it counts.</figcaption>
+        </figure>
+        <figure class="photo photo--c">
+          <img src="img/02-dashboard.png" alt="The course dashboard showing progress and the five portfolio projects" loading="lazy" width="1440" height="1100" />
+          <figcaption>Your progress, phase by phase.</figcaption>
+        </figure>
+      </div>
+    </section>
+
+    <!-- Hiring: flashcards -->
+    <section class="page" aria-labelledby="hire-title">
+      <h2 id="hire-title" class="hand">Why it helps you get hired</h2>
+      <p>
+        Hiring managers for junior IAM roles ask the same handful of questions. They are
+        not looking for definitions; they want to hear what you did and why. Every card
+        below is a question you will be able to answer from your own lab, with your own
+        screenshots. Click a card to see where you practise it.
+      </p>
+      <p class="roles">
+        Roles this prepares you for: IAM analyst, identity governance analyst,
+        access management analyst, junior IAM engineer, Entra ID or Okta administrator.
+      </p>
+      <ul class="cards">
+        <li><button class="card" aria-expanded="false">
+          <span class="card__q">Walk me through joiner, mover, leaver.</span>
+          <span class="card__a">Phase 1. You will have run all three, from an HR row to Entra and Okta, and can show the log.</span>
+        </button></li>
+        <li><button class="card" aria-expanded="false">
+          <span class="card__q">Why disable a leaver instead of deleting them?</span>
+          <span class="card__a">Phase 1 and 5. Evidence for audits, a way back for rehires, and how each platform treats it.</span>
+        </button></li>
+        <li><button class="card" aria-expanded="false">
+          <span class="card__q">What is a break-glass account?</span>
+          <span class="card__a">Phase 2. Why it is cloud-only, excluded from Conditional Access, and watched closely.</span>
+        </button></li>
+        <li><button class="card" aria-expanded="false">
+          <span class="card__q">Report-only or enforced: how do you roll out a policy?</span>
+          <span class="card__a">Phase 2. Measure the blast radius first, start with admins, then widen.</span>
+        </button></li>
+        <li><button class="card" aria-expanded="false">
+          <span class="card__q">How do you find stale accounts without flagging new hires?</span>
+          <span class="card__a">Phase 3. A grace period for accounts that have never signed in.</span>
+        </button></li>
+        <li><button class="card" aria-expanded="false">
+          <span class="card__q">How would you audit a service account?</span>
+          <span class="card__a">Phase 4. Owner, last use, credential age, permissions, and whether it is still needed.</span>
+        </button></li>
+        <li><button class="card" aria-expanded="false">
+          <span class="card__q">Entra Connect Sync or Cloud Sync?</span>
+          <span class="card__a">Setup and Phase 5. You hit the difference for real in this lab.</span>
+        </button></li>
+      </ul>
+    </section>
+
+    <!-- Homework: checklists -->
+    <section class="page" aria-labelledby="hw-title">
+      <h2 id="hw-title" class="hand">Homework after the last phase</h2>
+      <p>The lab is only half the job. The other half is making sure the right people can see it. Tick these off as you go; this page remembers them on your device.</p>
+
+      <div class="homework">
+        <fieldset class="checklist" data-list="github">
+          <legend class="hand">Your GitHub</legend>
+          <label><input type="checkbox" /><span>One repository per project, named for what it does, such as <code>iam-jml-automation</code>.</span></label>
+          <label><input type="checkbox" /><span>Generate each README from the lab's GitHub Portfolio page, then rewrite the first paragraph in your own words.</span></label>
+          <label><input type="checkbox" /><span>Add two or three screenshots and a run log from your Evidence locker.</span></label>
+          <label><input type="checkbox" /><span>Remove tenant names, email addresses and IDs from every screenshot and log.</span></label>
+          <label><input type="checkbox" /><span>Check for secrets before every push: no tokens, no <code>.clixml</code> files, no passwords.</span></label>
+          <label><input type="checkbox" /><span>Pin the five project repositories on your profile.</span></label>
+          <label><input type="checkbox" /><span>Write a short profile README: who you are, what you built, how to reach you.</span></label>
+        </fieldset>
+
+        <fieldset class="checklist" data-list="linkedin">
+          <legend class="hand">Your LinkedIn</legend>
+          <label><input type="checkbox" /><span>Headline that says what you do, for example: <em>IAM Analyst | Active Directory, Entra ID, Okta | PowerShell lifecycle automation</em>.</span></label>
+          <label><input type="checkbox" /><span>An About section of three sentences: what you built, what you can do, the role you want.</span></label>
+          <label><input type="checkbox" /><span>Feature the five GitHub repositories at the top of your profile.</span></label>
+          <label><input type="checkbox" /><span>One Projects entry per project: the problem, what you did, the result.</span></label>
+          <label><input type="checkbox" /><span>Skills: Active Directory, Microsoft Entra ID, Okta, PowerShell, Conditional Access, access reviews, identity governance.</span></label>
+          <label><input type="checkbox" /><span>Post once per project: a screenshot and the one thing it taught you.</span></label>
+          <label><input type="checkbox" /><span>Add your lab certificate, then aim for Microsoft SC-300 or an Okta certification next.</span></label>
+        </fieldset>
+      </div>
+      <p class="done-stamp" hidden>Homework complete. Go apply.</p>
+    </section>
+
+    <!-- Contact -->
+    <section class="page page--contact" aria-labelledby="contact-title">
+      <h2 id="contact-title" class="hand">Questions or access? Ask the author</h2>
+      <div class="contact">
+        <figure class="idcard">
+          <img src="img/author.jpg" alt="Portrait of Erick Omari" width="300" height="285" loading="lazy" />
+          <figcaption>
+            <strong>Erick Omari</strong>
+            Author of this lab. Questions, bugs and ideas are welcome.
+          </figcaption>
+        </figure>
+
+        <form class="letter" id="contact-form" novalidate>
+          <p class="letter__hint">This opens your email app with the message ready to send. To get the lab's code, say so and include your GitHub username.</p>
+          <label for="c-name">Your name</label>
+          <input id="c-name" name="name" autocomplete="name" required />
+          <label for="c-msg">Your message</label>
+          <textarea id="c-msg" name="message" rows="5" required></textarea>
+          <p class="letter__error" role="alert" hidden>Write your name and a message first.</p>
+          <div class="letter__actions">
+            <button type="submit" class="pen">Write to Erick</button>
+            <a class="link" href="https://github.com/pitchiluxe">GitHub profile</a>
+            <a class="link" id="linkedin-link" href="#" hidden>LinkedIn</a>
+          </div>
+        </form>
+      </div>
+    </section>
+  </main>
+
+  <footer class="rules">
+    <h2 class="hand">Lab rules</h2>
+    <p>Use your own free tenants, never an employer's. Preview before you apply. Keep secrets out of screenshots and out of Git. Everyone in the lab directory is fictional.</p>
+    <p class="small">IAM Lab From Zero To Hero, by Erick Omari.</p>
+  </footer>
+
+  <script src="app.js"></script>
+</body>
+</html>
