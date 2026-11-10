@@ -1,0 +1,71 @@
+/* The manual: same classroom, quieter board, the exercise book does the work. */
+.wall--short { padding-bottom: clamp(1rem, 3vw, 2rem); }
+.board--short { box-shadow: 0 10px 24px rgba(40, 30, 20, 0.22); }
+.board__surface--short { display: block; padding: clamp(1.1rem, 3vw, 2rem) clamp(1.25rem, 4vw, 3rem); }
+.board__surface--short::before { content: "JML: joiner > mover > leaver"; }
+.chalk--manual { font-size: clamp(2.2rem, 5vw, 3.6rem); }
+.chalk-link { color: var(--chalk-yellow); text-decoration-thickness: 1px; text-underline-offset: 3px; }
+.chalk-link:hover { color: var(--chalk); }
+
+.manual-layout {
+  max-width: 1180px; margin: 0 auto;
+  display: grid; grid-template-columns: 15.5rem minmax(0, 1fr); gap: 1.5rem; align-items: start;
+}
+.toc {
+  position: sticky; top: 1rem;
+  padding: 1rem 1rem 1.1rem 1.2rem;
+  background:
+    linear-gradient(180deg, transparent 2.4rem, var(--margin) 2.4rem 2.5rem, transparent 2.5rem),
+    repeating-linear-gradient(180deg, transparent 0 1.55rem, #dbe8f4 1.55rem 1.6rem) 0 2.5rem/100% 100% no-repeat,
+    #fff;
+  border: 1px solid #d8d8d0; box-shadow: 2px 3px 0 #e8e4d8;
+  transform: rotate(-0.6deg);
+}
+.toc__title { margin: 0 0 0.9rem; font-size: 1.35rem; }
+.toc ol { margin: 0; padding-left: 1.2rem; }
+.toc li { margin: 0 0 0.25rem; font-size: 0.95rem; line-height: 1.6; }
+.toc a { color: var(--graphite); text-decoration: none; }
+.toc a:hover, .toc a:focus-visible { color: var(--ink-blue); text-decoration: underline; }
+
+.manual-book { min-width: 0; width: 100%; } /* let the column shrink; wide printouts scroll inside themselves */
+.manual-book .page > * { max-width: 72ch; }
+.manual-book :not(pre) > code { overflow-wrap: anywhere; }
+.manual-book .page > .table-wrap, .manual-book .page > .printout, .manual-book .page > .manual-photo { max-width: 100%; }
+.manual-book h3 { margin: calc(var(--line) * 1) 0 calc(var(--line) * 0.5); font-size: 1.3rem; line-height: var(--line); color: var(--graphite); }
+.manual-book h3 + p { margin-top: 0; }
+.manual-book ul, .manual-book ol { margin: 0 0 var(--line); padding-left: 1.4rem; }
+.manual-book li { margin-bottom: 0.2rem; }
+.manual-book li > ul, .manual-book li > ol { margin: 0.2rem 0 0.2rem; }
+
+/* code: a typed printout clipped into the book */
+.printout {
+  position: relative; overflow-x: auto;
+  margin: 0 0 var(--line); padding: 1.1rem 1.2rem;
+  font: 0.86rem/1.55 Consolas, 'Courier New', monospace; color: #1d2228;
+  background: #f4f6f8; border-left: 4px solid #9aa7b4;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+.printout code { background: none; padding: 0; font-size: inherit; }
+
+/* tables: a ruled grid in pencil */
+.table-wrap { overflow-x: auto; margin: 0 0 var(--line); }
+.manual-book table { border-collapse: collapse; width: 100%; background: rgba(255, 255, 255, 0.92); font-size: 0.97rem; line-height: 1.5; }
+.manual-book th { text-align: left; font: 700 1.05rem var(--hand); color: var(--ink-blue); border-bottom: 2px solid var(--graphite); padding: 0.45rem 0.7rem; }
+.manual-book td { vertical-align: top; border-bottom: 1px solid #cfd6de; padding: 0.45rem 0.7rem; }
+
+/* blockquotes in the manual are the teacher's notes */
+.teacher-note {
+  margin: 0 0 var(--line); padding: 0.8rem 1rem 0.2rem 1.1rem;
+  background: var(--note-yellow); box-shadow: 0 4px 8px rgba(60, 40, 20, 0.15);
+  transform: rotate(-0.4deg);
+}
+.teacher-note p { margin: 0 0 0.6rem !important; line-height: 1.55; }
+
+/* screenshots */
+.manual-photo { margin: 0.5rem 0 calc(var(--line) * 1.25); transform: rotate(-0.5deg); max-width: 900px !important; }
+.manual-part:nth-child(even) .manual-photo { transform: rotate(0.6deg); }
+
+@media (max-width: 960px) {
+  .manual-layout { grid-template-columns: 1fr; gap: 0; }
+  .toc { position: static; transform: none; margin: 0 clamp(0.75rem, 3vw, 2rem) 1.25rem; }
+}

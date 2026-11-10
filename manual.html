@@ -1,0 +1,352 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>IAM Lab Manual</title>
+  <meta name="description" content="Step-by-step setup and user manual for IAM Lab From Zero To Hero: install, connect Entra ID and Okta, Phase 0 to Phase 5, start over and troubleshooting." />
+  <link rel="icon" href="img/favicon.svg" type="image/svg+xml" />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Kalam:wght@300;400;700&family=Literata:ital,opsz,wght@0,7..72,400;0,7..72,600;1,7..72,400&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="manual.css" />
+</head>
+<body class="manual">
+  <a class="skip" href="#main">Skip to the manual</a>
+  <!-- generated from docs/MANUAL.md by scripts/build-site-manual.mjs; edit the Markdown, not this file -->
+  <header class="wall wall--short">
+    <div class="board board--short">
+      <div class="board__surface board__surface--short">
+        <p class="board__date"><a class="chalk-link" href="index.html">Back to the classroom</a></p>
+        <h1 class="chalk chalk--title chalk--manual">The lab manual</h1>
+        <p class="chalk board__sub">From an empty PC to Phase 5, one step at a time. Real screenshots and real output from a running lab.</p>
+      </div>
+    </div>
+  </header>
+  <div class="manual-layout">
+    <nav class="toc" aria-label="Manual contents">
+      <p class="toc__title hand">Contents</p>
+      <ol>
+        <li><a href="#what-you-are-building">What you are building</a></li>
+        <li><a href="#part-a--install-the-lab-once-about-12-hours">Part A — Install the lab (once, about 1–2 hours)</a></li>
+        <li><a href="#part-b--daily-use-one-click-start-and-stop">Part B — Daily use: one-click Start and Stop</a></li>
+        <li><a href="#part-c--connect-your-cloud-accounts-once">Part C — Connect your cloud accounts (once)</a></li>
+        <li><a href="#part-d--the-course-phase-0-to-phase-5">Part D — The course, Phase 0 to Phase 5</a></li>
+        <li><a href="#part-e--start-over-and-re-take-the-lab">Part E — Start over and re-take the lab</a></li>
+        <li><a href="#part-f--troubleshooting">Part F — Troubleshooting</a></li>
+        <li><a href="#part-g--safety-rules">Part G — Safety rules</a></li>
+      </ol>
+    </nav>
+    <main id="main" class="book manual-book">
+      <section class="page manual-part">
+<p>From an empty PC to a working Identity &amp; Access Management lab: a real Active Directory domain, synced to <strong>your own Entra ID tenant</strong> and <strong>your own Okta org</strong>, with an AI instructor, five portfolio projects (Phase 0 to Phase 5), and a one-click start.</p>
+<aside class="teacher-note"><p><strong>About the pictures.</strong> Every screenshot of the platform in this manual was taken from a real, running lab VM. Command output shown in grey boxes is real output from the same lab. Steps inside the Microsoft and Okta web portals are described in words, because those portals change their layout often.</p></aside>
+</section><section class="page manual-part" aria-labelledby="what-you-are-building"><h2 id="what-you-are-building" class="hand">What you are building</h2>
+<pre class="printout"><code> Your PC (Windows 10/11)
+ ├── Desktop icons: "Start IAM Lab" / "Stop IAM Lab"
+ └── VirtualBox VM: IAMZ2H-DC01  (Windows Server 2022, internet through NAT)
+     ├── Real Active Directory: contoso.lab, ADUC, DNS, PowerShell
+     ├── IAM Lab platform: http://localhost:8080 (inside the VM only)
+     ├── Lab scripts: C:\IAM\Scripts   (audit logs in C:\IAM\Logs)
+     ├── Ollama + llama3.2: the AI Instructor (no GPU needed)
+     ├── Microsoft Entra Connect Sync ──► your Entra ID tenant
+     └── Okta REST API (token)       ──► your Okta org</code></pre>
+<p>Two kinds of activity, always labelled on screen:</p>
+<div class="table-wrap"><table><thead><tr><th>Label</th><th>Meaning</th></tr></thead><tbody><tr><td><strong>Simulated output</strong></td><td>Lessons, course labs and workbenches. Nothing is executed. Works anywhere.</td></tr><tr><td><strong>Real tool output</strong></td><td>The Real Lab page. Scripts really change Active Directory in the VM, and (through sync and APIs) your own Entra tenant and Okta org.</td></tr></tbody></table></div>
+</section><section class="page manual-part" aria-labelledby="part-a--install-the-lab-once-about-12-hours"><h2 id="part-a--install-the-lab-once-about-12-hours" class="hand">Part A — Install the lab (once, about 1–2 hours)</h2>
+<h3 id="a1-check-your-pc">A1. Check your PC</h3>
+<div class="table-wrap"><table><thead><tr><th>Need</th><th>Minimum</th></tr></thead><tbody><tr><td>Windows</td><td>Windows 10 or 11 (Home is fine)</td></tr><tr><td>Memory</td><td>14 GB RAM or more (the VM uses 10 GB)</td></tr><tr><td>Disk</td><td>60 GB free</td></tr><tr><td>CPU</td><td>Virtualisation enabled in the BIOS/UEFI</td></tr><tr><td>Internet</td><td>Needed during the build (downloads Node.js, Microsoft Graph PowerShell, Ollama and a 2 GB AI model)</td></tr></tbody></table></div>
+<aside class="teacher-note"><p><strong>Tip — slow VM?</strong> If Windows' own hypervisor is on, VirtualBox runs on top of it and gets much slower. Check with <code>(Get-CimInstance Win32_ComputerSystem).HypervisorPresent</code> in PowerShell. See <a href="#part-f--troubleshooting">Part F</a>.</p></aside>
+<h3 id="a2-install-virtualbox">A2. Install VirtualBox</h3>
+<ol>
+<li>Download <strong>VirtualBox 7</strong> for Windows hosts from <a href="https://www.virtualbox.org/wiki/Downloads" rel="noopener">virtualbox.org</a>.</li>
+<li>Run the installer with the default options.</li>
+</ol>
+<h3 id="a3-download-windows-server-2022-free-evaluation">A3. Download Windows Server 2022 (free evaluation)</h3>
+<ol>
+<li>Go to the <a href="https://www.microsoft.com/evalcenter/download-windows-server-2022" rel="noopener">Microsoft Evaluation Center</a> and download the <strong>ISO</strong> (English, 64-bit).</li>
+<li>Save it exactly here (create the folders if needed):</li>
+</ol>
+<pre class="printout"><code>C:\Users\&lt;you&gt;\Downloads\ADLab-ISOs\WindowsServer2022-Eval.iso</code></pre>
+<p>The evaluation is free for 180 days.</p>
+<h3 id="a4-get-the-project">A4. Get the project</h3>
+<p>Download or clone the project folder, for example to <code>Documents\IAM_LAB_From_ZERO_To_HERO</code>. Everything below runs from that folder. The code repository is private for now: ask the author for access through the contact form on the <a href="https://pitchiluxe.github.io/iam-lab-from-zero-to-hero/#contact-title" rel="noopener">landing page</a>.</p>
+<h3 id="a5-build-the-vm-one-command">A5. Build the VM (one command)</h3>
+<p>Open <strong>PowerShell</strong> on your PC, go to the project folder, and run:</p>
+<pre class="printout"><code>powershell -ExecutionPolicy Bypass -File .\vm-kit\Build-Lab.ps1</code></pre>
+<p>What happens (you can watch the VirtualBox window, but do not type in it):</p>
+<ol>
+<li>Creates the VM <code>IAMZ2H-DC01</code> (2 CPUs, 10 GB RAM, 120 GB disk) and installs Windows Server unattended.</li>
+<li>Promotes it to a domain controller for <strong>contoso.lab</strong> and restarts.</li>
+<li>Installs Node.js, Microsoft Graph PowerShell and <strong>Ollama</strong> with the <code>llama3.2</code> model.</li>
+<li>Installs the IAM Lab platform and sets it to start automatically.</li>
+<li>Saves a restore point called <strong>Clean-Start</strong>.</li>
+</ol>
+<p>It takes an hour or more. <strong>It can be re-run safely:</strong> if your internet drops, run the same command again and finished steps are skipped. Add <code>-SkipOllama</code> to leave out the AI instructor.</p>
+<h3 id="a6-get-the-vm-password">A6. Get the VM password</h3>
+<p>The VM's Administrator password is generated during the build and stored encrypted for your Windows account. Show it with:</p>
+<pre class="printout"><code>powershell -ExecutionPolicy Bypass -File .\vm-kit\Show-LabPassword.ps1</code></pre>
+<h3 id="a7-put-the-one-click-icons-on-your-desktop">A7. Put the one-click icons on your desktop</h3>
+<pre class="printout"><code>powershell -ExecutionPolicy Bypass -File .\vm-kit\Install-LabShortcuts.ps1</code></pre>
+<pre class="printout"><code>Created 'Start IAM Lab' on the desktop and in Start &gt; IAM Lab
+Created 'Stop IAM Lab' on the desktop and in Start &gt; IAM Lab</code></pre>
+<p>From now on you never need to type a command to start or stop the lab.</p>
+</section><section class="page manual-part" aria-labelledby="part-b--daily-use-one-click-start-and-stop"><h2 id="part-b--daily-use-one-click-start-and-stop" class="hand">Part B — Daily use: one-click Start and Stop</h2>
+<h3 id="start">Start</h3>
+<p>Double-click <strong>Start IAM Lab</strong> on your desktop. A small window shows progress (real output):</p>
+<pre class="printout"><code>[22:18:35] VM IAMZ2H-DC01 is running
+[22:18:35] Waiting for Windows in the VM (a few minutes after a cold start)
+[22:18:51] Windows is up (DC01)
+[22:18:51] Waiting for the IAM Lab platform, Active Directory and the sync engine
+[22:19:01] Status: platform=True exec=True ad=True sync=Running
+
+The lab is ready.
+  1. Go to the VirtualBox window 'IAMZ2H-DC01'.
+  2. Sign in as CONTOSO\Administrator (password: vm-kit\Show-LabPassword.ps1).
+  3. The IAM Lab opens by itself. If not, double-click 'IAM Lab' on the VM desktop.
+When you are done, use 'Stop IAM Lab' so the domain controller shuts down cleanly.</code></pre>
+<p>From a cold start this takes about 3–5 minutes. Clicking it while the lab is already running is safe: it only checks.</p>
+<p>Inside the VM you also have desktop icons for <strong>IAM Lab</strong>, <strong>AD Users and Computers</strong>, <strong>Lab PowerShell</strong> (opens in <code>C:\IAM\Scripts</code>) and <strong>Entra Admin Center</strong>.</p>
+<h3 id="stop">Stop</h3>
+<p>Double-click <strong>Stop IAM Lab</strong>. It asks Windows in the VM to shut down properly.</p>
+<aside class="teacher-note"><p><strong>Why not just close the window?</strong> A domain controller keeps databases (Active Directory, the sync engine) that a hard power-off can damage. Always use <strong>Stop IAM Lab</strong>.</p></aside>
+<h3 id="the-platform">The platform</h3>
+<figure class="photo manual-photo"><img src="img/manual/02-dashboard.png" alt="Dashboard: progress, current phase and the five portfolio projects" loading="lazy" /><figcaption>Dashboard: progress, current phase and the five portfolio projects</figcaption></figure>
+<p>The left menu has four groups:</p>
+<div class="table-wrap"><table><thead><tr><th>Group</th><th>Pages</th></tr></thead><tbody><tr><td><strong>Course</strong></td><td>Dashboard, Roadmap, 3D Identity Lifecycle</td></tr><tr><td><strong>Real tools (in the VM)</strong></td><td>Real Lab, AI Instructor, Connect Entra &amp; Okta</td></tr><tr><td><strong>Portfolio projects</strong></td><td>One workbench per project, 1 to 5</td></tr><tr><td><strong>Learn &amp; prove</strong></td><td>Lab Library, Quiz, Progress, Notes, Evidence, GitHub Portfolio, Certificate</td></tr></tbody></table></div>
+</section><section class="page manual-part" aria-labelledby="part-c--connect-your-cloud-accounts-once"><h2 id="part-c--connect-your-cloud-accounts-once" class="hand">Part C — Connect your cloud accounts (once)</h2>
+<p>You can do Phases 0–5 with simulations only. Connecting <strong>your own</strong> Entra tenant and Okta org makes Phases 1, 3, 4 and 5 run for real across three platforms. Use <strong>free lab accounts only — never an employer's</strong>.</p>
+<p>The <strong>Connect Entra &amp; Okta</strong> page in the platform lists the same steps and shows live status badges:</p>
+<figure class="photo manual-photo"><img src="img/manual/05-connect.png" alt="Connect page with the Entra and Okta setup steps" loading="lazy" /><figcaption>Connect page with the Entra and Okta setup steps</figcaption></figure>
+<h3 id="c1-build-the-domain-first">C1. Build the domain first</h3>
+<p>The sync scope needs <code>OU=Corp</code> to exist. In the <strong>Real Lab</strong>, run steps <strong>1 · Build AD</strong> (both buttons) before connecting Entra. See <a href="#phase-1--ad-lab-with-automated-user-lifecycle">Phase 1</a>.</p>
+<h3 id="c2-entra-id-tenant-and-admin">C2. Entra ID tenant and admin</h3>
+<ol>
+<li>Create a free tenant (a free Azure account creates one).</li>
+<li>In the <a href="https://entra.microsoft.com" rel="noopener">Entra admin center</a>, create a cloud admin for the lab and turn on MFA for it.</li>
+</ol>
+<h3 id="c3-sign-in-from-the-vm">C3. Sign in from the VM</h3>
+<p>In the VM, open <strong>Lab PowerShell</strong> and run:</p>
+<pre class="printout"><code>C:\IAM\Scripts\entra\Connect-Entra.ps1</code></pre>
+<p>A browser opens; sign in with your lab admin and MFA and accept the permissions it lists. The script saves an encrypted sign-in for this VM account, so lab scripts can use Microsoft Graph without asking again.</p>
+<h3 id="c4-install-microsoft-entra-connect-sync-ad--entra">C4. Install Microsoft Entra Connect Sync (AD → Entra)</h3>
+<ol>
+<li>In the Entra admin center: <strong>Entra Connect → Connect Sync</strong> (or <strong>Get started</strong>) → <strong>Download</strong>. Save it in the VM.</li>
+<li>In the VM, turn <strong>IE Enhanced Security Configuration</strong> off for Administrators (<em>Server Manager → Local Server</em>). It blocks the installer's sign-in window. Turn it back on afterwards.</li>
+<li>Run the installer and choose <strong>Customize</strong> (not Express — Express syncs the whole domain):
+<ul>
+<li><strong>User sign-in:</strong> <em>Password Hash Synchronization</em></li>
+<li><strong>Connect to Microsoft Entra ID:</strong> sign in with your lab admin</li>
+<li><strong>Connect your directories:</strong> <code>contoso.lab</code> → <em>Add Directory</em> → <em>Create new AD account</em> → <code>CONTOSO\Administrator</code></li>
+<li><strong>Microsoft Entra sign-in:</strong> tick <em>Continue without matching all UPN suffixes to verified domains</em></li>
+<li><strong>Domain/OU filtering:</strong> <em>Sync selected domains and OUs</em> → untick everything → tick only <strong>Corp</strong></li>
+<li>Keep <em>Start the synchronization process</em> ticked → <strong>Install</strong></li>
+</ul></li>
+<li>Synced users appear as <code>name@&lt;yourtenant&gt;.onmicrosoft.com</code>, because <code>contoso.lab</code> is not a domain you own. That is expected.</li>
+</ol>
+<aside class="teacher-note"><p><strong>Why Connect Sync and not Cloud Sync?</strong> Cloud Sync's agent receives work over a held-open web socket; inside this NAT'd VM that channel kept failing about 7.5 minutes after every start. Connect Sync only makes outbound HTTPS calls, so it works here. Knowing when to choose each is a common interview question.</p></aside>
+<p>Check it from the Real Lab with <strong>Check AD to Entra sync</strong> (real output):</p>
+<pre class="printout"><code>Tenant: &lt;your tenant&gt;  syncEnabled=True  lastSync=11/10/2026 01:21:13
+SYNCED   mchen          -&gt; mchen@&lt;tenant&gt;.onmicrosoft.com  cloudEnabled=True
+SYNCED   jreyes         -&gt; jreyes@&lt;tenant&gt;.onmicrosoft.com  cloudEnabled=True
+SYNCED   pshah          -&gt; pshah@&lt;tenant&gt;.onmicrosoft.com  cloudEnabled=False
+...</code></pre>
+<p>Sync runs every 30 minutes. To push it now, open a <strong>separate</strong> PowerShell window in the VM:</p>
+<pre class="printout"><code>Start-ADSyncSyncCycle -PolicyType Delta</code></pre>
+<h3 id="c5-okta-org-and-api-token">C5. Okta org and API token</h3>
+<ol>
+<li>Sign up for the <strong>Okta Integrator Free Plan</strong> (Workforce Identity) at <a href="https://developer.okta.com/signup/" rel="noopener">developer.okta.com/signup</a>. Choose the role <em>Other developers exploring APIs and SDKs</em>.
+<ul>
+<li>Okta refuses free email providers such as Gmail and Outlook.com. Use an address on a domain you own.</li>
+</ul></li>
+<li>In the Okta Admin Console (the address ending in <code>-admin.okta.com</code>): <strong>Security → API → Tokens → Create token</strong>. Name it <code>IAM-Lab-VM</code>, keep <em>Any IP</em>, and copy it. It is shown only once.</li>
+<li>In the VM, in <strong>Lab PowerShell</strong>, run with <strong>your org URL — the one without <code>-admin</code></strong>:</li>
+</ol>
+<pre class="printout"><code>C:\IAM\Scripts\okta\Set-OktaConnection.ps1 -OrgUrl https://integrator-1234567.okta.com</code></pre>
+<ol>
+<li>Paste the token at the hidden prompt (right-click pastes). Success looks like:</li>
+</ol>
+<pre class="printout"><code>Connected to Okta org: &lt;your org name&gt; (https://integrator-1234567.okta.com)</code></pre>
+<p>The token is encrypted with Windows DPAPI for the VM's Administrator account and never passes through the web page.</p>
+</section><section class="page manual-part" aria-labelledby="part-d--the-course-phase-0-to-phase-5"><h2 id="part-d--the-course-phase-0-to-phase-5" class="hand">Part D — The course, Phase 0 to Phase 5</h2>
+<figure class="photo manual-photo"><img src="img/manual/03-roadmap.png" alt="Course roadmap: Phase 0 orientation and the five portfolio projects" loading="lazy" /><figcaption>Course roadmap: Phase 0 orientation and the five portfolio projects</figcaption></figure>
+<p>Every phase follows the same loop: <strong>lesson → simulated lab → workbench → (real lab) → quiz → evidence</strong>.</p>
+<ul>
+<li><strong>Lessons</strong> open from the Roadmap or the Dashboard's <em>Continue lesson</em> button.</li>
+<li><strong>Simulated labs</strong> (Lab Library) have a safe terminal that only understands the lab's commands, an expected-results panel and evidence capture.</li>
+<li><strong>Workbenches</strong> are interactive tools that export a report to your <strong>Evidence</strong> locker.</li>
+<li><strong>Real Lab</strong> steps run on the real domain controller.</li>
+</ul>
+<figure class="photo manual-photo"><img src="img/manual/12-lab-detail.png" alt="A simulated lab: steps, safe terminal, expected results and evidence capture" loading="lazy" /><figcaption>A simulated lab: steps, safe terminal, expected results and evidence capture</figcaption></figure>
+<h3 id="the-real-lab-page">The Real Lab page</h3>
+<figure class="photo manual-photo"><img src="img/manual/04-real-lab.png" alt="Real Lab: live status, script catalog, output and your own script box" loading="lazy" /><figcaption>Real Lab: live status, script catalog, output and your own script box</figcaption></figure>
+<ul>
+<li><strong>Status tiles</strong> show Active Directory, the lab structure, Entra (and whether Connect Sync is running) and Okta, read live from the VM.</li>
+<li><strong>Script catalog</strong>, grouped by phase. Scripts that change things have <strong>Preview (-WhatIf)</strong> — always preview first — and <strong>Run on real AD</strong>.</li>
+<li><strong>Output</strong> streams the real PowerShell output. <strong>Save as evidence</strong> stores it; <strong>Ask the instructor</strong> sends it to the AI Instructor for an explanation.</li>
+<li><strong>Your own script</strong> runs any PowerShell you paste. Risky patterns (deleting objects, downloads, encoded commands) need a tick to confirm, and <strong>code from the AI Instructor always needs the tick</strong>.</li>
+<li><strong>Live directory</strong> lists the accounts in <code>OU=Corp</code>.</li>
+</ul>
+<h3 id="phase-0--iam-foundations--lab-orientation">Phase 0 — IAM Foundations &amp; Lab Orientation</h3>
+<p><strong>Goal:</strong> understand why identity is the new perimeter, the IAM vocabulary (AAA, JML, least privilege), and tour the hybrid <code>contoso.lab</code> environment.</p>
+<ol>
+<li>Dashboard → <strong>Continue lesson: Identity Is the New Perimeter</strong>.</li>
+<li>Open <strong>3D Identity Lifecycle</strong> to see a person's journey from HR record to deprovisioning.</li>
+<li>Do the lab <strong>Tour the contoso.lab Hybrid Identity Environment</strong>.</li>
+<li>Take the Phase 0 quiz.</li>
+</ol>
+<h3 id="phase-1--ad-lab-with-automated-user-lifecycle">Phase 1 — AD Lab with Automated User Lifecycle</h3>
+<p><strong>Goal:</strong> build an AD structure for automation and run real Joiner-Mover-Leaver (JML) from an HR feed, driven by department and group rules.</p>
+<p><strong>Workbench:</strong> <em>1 · AD Lifecycle Automation</em> (JML Automation Console).</p>
+<figure class="photo manual-photo"><img src="img/manual/06-ad-lifecycle.png" alt="JML Automation Console workbench" loading="lazy" /><figcaption>JML Automation Console workbench</figcaption></figure>
+<p><strong>Real Lab steps, in order</strong> (preview each, then run):</p>
+<div class="table-wrap"><table><thead><tr><th>Step</th><th>Real Lab button</th><th>What it does</th></tr></thead><tbody><tr><td>1</td><td><strong>Build OUs, groups and AGDLP nesting</strong></td><td>Creates <code>OU=Corp</code>, department OUs, <code>GG-*</code> global and <code>DL-*</code> domain-local groups, AGDLP nesting. Safe to re-run.</td></tr><tr><td>2</td><td><strong>Create starting staff</strong></td><td>Creates the managers plus the mover and leaver used by the HR feed</td></tr><tr><td>3</td><td><strong>Joiner</strong> <code>E10421</code></td><td>Onboards Amara Nwosu (Finance, AP Specialist)</td></tr><tr><td>4</td><td><strong>Mover</strong> <code>E10388</code></td><td>Moves Daniel Ortiz from Marketing to Sales: removes old access <strong>first</strong>, then grants new</td></tr><tr><td>5</td><td><strong>Leaver</strong> <code>E10102</code></td><td>Offboards Priya Shah: disable, reset password, revoke cloud sessions, record and remove groups, move to <code>OU=Disabled</code></td></tr></tbody></table></div>
+<p>Real output of the three events:</p>
+<pre class="printout"><code>[HIRE] E10421  run=8adc495c  operations=5
+  OK   Create
+  OK   AddGroup GG-Finance-Users
+  OK   AddGroup GG-AllStaff
+  OK   AddGroup GG-AP-Clerks
+  OK   Enable anwosu
+VERIFIED from AD: sam=anwosu enabled=True ou=OU=Finance,OU=Users,OU=Corp,DC=contoso,DC=lab
+
+[MOVE] E10388  run=4f354034  operations=6
+  OK   RemoveGroup GG-Marketing-Users
+  OK   RemoveGroup GG-Social-Publishers
+  OK   Move OU=Sales,OU=Users,OU=Corp,DC=contoso,DC=lab
+  OK   SetAttributes
+  OK   AddGroup GG-Sales-Users
+  OK   AddGroup GG-Account-Managers
+
+[LEAVE] E10102  run=cab508fa  operations=9
+  OK   Disable pshah
+  OK   ResetPassword pshah
+  OK   RevokeCloudSessions pshah
+  OK   RecordGroups GG-Git-Maintainers;GG-Git-Developers;GG-Eng-Users;GG-AllStaff
+  OK   RemoveGroup GG-AllStaff
+  ...
+  OK   Move OU=Disabled,OU=Corp,DC=contoso,DC=lab
+VERIFIED from AD: sam=pshah enabled=False ou=OU=Disabled,OU=Corp,DC=contoso,DC=lab</code></pre>
+<p><strong>If Entra and Okta are connected</strong>, finish the cross-platform loop:</p>
+<ol>
+<li>Push to Entra (separate PowerShell window): <code>Start-ADSyncSyncCycle -PolicyType Delta</code>, then <strong>Check AD to Entra sync</strong>. The joiner appears, the mover's department changes, and the leaver shows <code>cloudEnabled=False</code> — disabled and kept for audit, not deleted.</li>
+<li><strong>Sync AD staff to Okta</strong>: preview, then tick <strong>Apply</strong>. Real output:</li>
+</ol>
+<pre class="printout"><code>AD accounts: 7  Okta users: 1  actions: 6
+[+] created mchen@contoso.lab status=STAGED
+[+] created anwosu@contoso.lab status=STAGED
+...</code></pre>
+<p>New Okta users are created <strong>STAGED</strong> (they exist but cannot sign in, and no activation email is sent). Leavers are <strong>deactivated</strong>.</p>
+<p>Every run is written to the audit log <code>C:\IAM\Logs\jml-&lt;date&gt;.log</code>.</p>
+<h3 id="phase-2--conditional-access-policy-framework">Phase 2 — Conditional Access Policy Framework</h3>
+<p><strong>Goal:</strong> design an Entra ID Conditional Access framework (MFA, device compliance, location, risk) with a <strong>business justification for every policy</strong>, and test it with <em>What If</em> before enforcing anything.</p>
+<p><strong>Workbench:</strong> <em>2 · Conditional Access</em> (Conditional Access Designer).</p>
+<figure class="photo manual-photo"><img src="img/manual/07-conditional-access.png" alt="Conditional Access Designer: policies, justifications and What If" loading="lazy" /><figcaption>Conditional Access Designer: policies, justifications and What If</figcaption></figure>
+<ol>
+<li>For each policy, write a justification (40+ characters): what risk, what impact on users, what evidence, who owns it.</li>
+<li>Use <strong>What If</strong> to test personas, apps, locations, devices and sign-in risk.</li>
+<li>Read the <strong>Framework review</strong>, then <strong>Export framework document</strong> to Evidence.</li>
+</ol>
+<p><strong>Real deployment (optional, needs a licence).</strong> Conditional Access needs <strong>Entra ID P1 or P2</strong> — even report-only. In the Real Lab, <strong>Deploy CA baseline</strong> always previews first and refuses to apply until all of these pass:</p>
+<ul>
+<li>a <strong>break-glass group</strong> (cloud-only security group) holding a separate <strong>Global Administrator</strong> emergency account;</li>
+<li>at least <strong>two</strong> Global Administrators;</li>
+<li><strong>Security Defaults</strong> turned <strong>off</strong> (they cannot run together with Conditional Access);</li>
+<li>an <strong>active P1/P2</strong> licence.</li>
+</ul>
+<p>It creates CA000, CA001, CA004 and CA006 as <strong>report-only</strong> and <strong>CA002-Admins-RequireMFA as enforced</strong>, because once Security Defaults is off nothing else makes admins use MFA. Without a licence, do Phase 2 in the workbench and keep the guarded preview output as evidence.</p>
+<aside class="teacher-note"><p>**Licences that do <em>not</em> help:** <em>Microsoft Entra ID Governance</em> is an add-on that needs P1/P2 underneath; it does not unlock Conditional Access. Each tenant gets one Entra ID P2 trial.</p></aside>
+<h3 id="phase-3--access-review--recertification">Phase 3 — Access Review &amp; Recertification</h3>
+<p><strong>Goal:</strong> find stale accounts, over-privileged users, role accumulation and SoD conflicts, and document them like an audit.</p>
+<p><strong>Workbench:</strong> <em>3 · Access Review</em>.</p>
+<figure class="photo manual-photo"><img src="img/manual/08-access-review.png" alt="Access Review Workbench" loading="lazy" /><figcaption>Access Review Workbench</figcaption></figure>
+<p><strong>Real Lab:</strong> <strong>Find stale accounts</strong> and <strong>List privileged group members</strong>. New accounts get a 14-day grace period, so a new hire is not flagged on day one (real output):</p>
+<pre class="printout"><code>Stale findings (no sign-in in 90 days, or never used after 14 days): 0
+Not flagged: 5 new account(s) not signed in yet, still inside the 14-day grace period: mchen, klindqvist, jreyes, dortiz, anwosu.</code></pre>
+<p>Save both outputs as evidence and write the findings into the workbench's audit report.</p>
+<h3 id="phase-4--non-human-identity-inventory">Phase 4 — Non-Human Identity Inventory</h3>
+<p><strong>Goal:</strong> inventory service accounts, gMSAs, app registrations and API keys; audit rotation, permissions, ownership, and whether each is still needed.</p>
+<p><strong>Workbench:</strong> <em>4 · Non-Human Identities</em> (NHI Inventory Auditor).</p>
+<figure class="photo manual-photo"><img src="img/manual/09-nhi-inventory.png" alt="NHI Inventory Auditor" loading="lazy" /><figcaption>NHI Inventory Auditor</figcaption></figure>
+<p><strong>Real Lab:</strong> <strong>Non-human identity inventory</strong> reads AD SPN accounts, gMSAs and (if Entra is connected) app registrations with credential metadata. Real findings from a lab that tried Cloud Sync first and then switched:</p>
+<pre class="printout"><code>== Group Managed Service Accounts
+provAgentgMSA     True     &lt;- left behind by the abandoned Cloud Sync agent: orphaned
+ADSyncMSA48f2e    True     &lt;- used by Connect Sync: keep
+== Entra app registrations (credential metadata only)
+contoso.lab  owners=0      &lt;- no owner: classic audit finding</code></pre>
+<h3 id="phase-5--cross-platform-comparison-ad-vs-entra-vs-okta">Phase 5 — Cross-Platform Comparison: AD vs Entra vs Okta</h3>
+<p><strong>Goal:</strong> compare user creation, MFA and lifecycle across the three platforms, using the same people.</p>
+<p><strong>Workbench:</strong> <em>5 · AD vs Entra vs Okta</em>.</p>
+<figure class="photo manual-photo"><img src="img/manual/10-platform-compare.png" alt="Platform Comparison workbench" loading="lazy" /><figcaption>Platform Comparison workbench</figcaption></figure>
+<p>With everything connected, one leaver reaches all three platforms (real result):</p>
+<div class="table-wrap"><table><thead><tr><th>Platform</th><th>After the leaver</th></tr></thead><tbody><tr><td><strong>AD</strong></td><td>Disabled, in <code>OU=Disabled</code>, groups removed and recorded in the description</td></tr><tr><td><strong>Entra ID</strong></td><td>Disabled after sync; sessions revoked before the sync ran; kept for audit</td></tr><tr><td><strong>Okta</strong></td><td><code>DEPROVISIONED</code></td></tr></tbody></table></div>
+<p>Use <strong>Check Okta connection</strong> to see each user's Okta lifecycle state (<code>STAGED</code>, <code>ACTIVE</code>, <code>DEPROVISIONED</code>).</p>
+<h3 id="prove-it-quiz-evidence-and-portfolio">Prove it: quiz, evidence and portfolio</h3>
+<div class="table-wrap"><table><thead><tr><th>Page</th><th>Use it for</th></tr></thead><tbody><tr><td><strong>Quiz &amp; Assessment</strong></td><td>Phase quizzes and the 90-question readiness assessment (750/900 = job-ready)</td></tr><tr><td><strong>Evidence</strong></td><td>Everything you saved from labs, workbenches and real runs</td></tr><tr><td><strong>GitHub Portfolio</strong></td><td>Turns your evidence into project READMEs</td></tr><tr><td><strong>Certificate</strong></td><td>Completion certificate</td></tr></tbody></table></div>
+<figure class="photo manual-photo"><img src="img/manual/13-quiz.png" alt="Quiz and readiness assessment" loading="lazy" /><figcaption>Quiz and readiness assessment</figcaption></figure>
+<h3 id="the-ai-instructor">The AI Instructor</h3>
+<figure class="photo manual-photo"><img src="img/manual/15-instructor.png" alt="AI Instructor running locally on Ollama" loading="lazy" /><figcaption>AI Instructor running locally on Ollama</figcaption></figure>
+<p>Runs on Ollama inside the VM; your questions stay there. Choose <strong>Give me code</strong> or <strong>Coach me</strong>, and optionally let it read the accounts in <code>OU=Corp</code>. Code it writes opens in the Real Lab's script box, where you must read it and tick the confirmation before it can run.</p>
+</section><section class="page manual-part" aria-labelledby="part-e--start-over-and-re-take-the-lab"><h2 id="part-e--start-over-and-re-take-the-lab" class="hand">Part E — Start over and re-take the lab</h2>
+<p>You can redo Phases 1–5 as many times as you like <strong>without reconnecting Entra or Okta</strong>.</p>
+<h3 id="e1-start-over-recommended">E1. Start over (recommended)</h3>
+<p>In the <strong>Real Lab</strong>, card <strong>0 · Start over → Start over: clear the exercises</strong>:</p>
+<ol>
+<li>Click <strong>Run on real AD</strong> with <em>Apply</em> <strong>unticked</strong> to preview. Real preview output:</li>
+</ol>
+<pre class="printout"><code>[START OVER] PREVIEW  run=b918ff27  domain=contoso.lab
+  Okta: 6 lab user(s) to remove; your admin and other users are kept
+    [preview] remove mchen@contoso.lab (STAGED)
+    ...
+  AD: remove OU=Corp,DC=contoso,DC=lab with 7 user(s), 22 group(s), 11 OU(s)
+  Entra: after the AD removal, Connect Sync deletes the synced copies (they stay in the recycle bin 30 days)
+Preview only. Kept either way: Entra sign-in, Okta token, Connect Sync, Ollama, platform, audit logs.</code></pre>
+<ol>
+<li>Tick <strong>Apply</strong> and run it again. It takes under a minute. Real output:</li>
+</ol>
+<pre class="printout"><code>[START OVER] APPLY  run=a8fa1791  domain=contoso.lab
+  Okta: 6 lab user(s) to remove; your admin and other users are kept
+    [-] removed mchen@contoso.lab
+    ...
+  AD: remove OU=Corp,DC=contoso,DC=lab with 7 user(s), 22 group(s), 11 OU(s)
+    [-] removed OU=Corp,DC=contoso,DC=lab
+  Entra: Connect Sync delta run started (exit 0); cloud copies disappear within a few minutes
+Done. Kept: Entra sign-in, Okta token, Connect Sync, Ollama, platform, audit logs.</code></pre>
+<p>When you rebuild, Connect Sync creates <strong>new</strong> Entra users with the same sign-in names. The old ones stay in the Entra recycle bin under renamed sign-in names (<code>&lt;id&gt;name@...</code>), so they never clash, and Entra purges them after 30 days.</p>
+<aside class="teacher-note"><p><strong>Tip:</strong> if you rebuild and run the leaver straight away, it reports <em>Cloud sessions NOT revoked (user not synced)</em>. That is correct: the user does not exist in Entra until the next sync. The AD side of the leaver still completes.</p></aside>
+<div class="table-wrap"><table><thead><tr><th>Removed</th><th>Kept</th></tr></thead><tbody><tr><td><code>OU=Corp</code> and everything in it (staff, groups, OUs)</td><td>Your Entra sign-in and your Okta token</td></tr><tr><td>The lab's Okta users (logins <code>@contoso.lab</code>)</td><td>Connect Sync and its settings</td></tr><tr><td>Their Entra copies (Connect Sync removes them; 30 days in the recycle bin)</td><td>Ollama, the platform, the audit logs</td></tr></tbody></table></div>
+<p>Then start again at Phase 1 with <strong>Build OUs, groups and AGDLP nesting</strong>.</p>
+<p>To also reset your <strong>course progress</strong> (lessons, quizzes, mastery), use <strong>Progress → Reset all progress</strong>. That only clears your browser's saved progress.</p>
+<h3 id="e2-restore-points-whole-vm-rewind">E2. Restore points (whole-VM rewind)</h3>
+<p>For a full rewind of the VM, run on your <strong>PC</strong> (not in the VM), from the project folder:</p>
+<pre class="printout"><code>powershell -ExecutionPolicy Bypass -File .\vm-kit\Reset-Lab.ps1 -Snapshot &lt;name&gt;</code></pre>
+<div class="table-wrap"><table><thead><tr><th>Restore point</th><th>Holds</th></tr></thead><tbody><tr><td><code>Ready-Empty</code></td><td>Empty domain. <strong>No</strong> cloud connections or Connect Sync</td></tr><tr><td><code>Clean-Start</code></td><td>What a fresh build saves</td></tr></tbody></table></div>
+<p>A restore point keeps whatever was signed in when it was taken, but <strong>does not roll back Entra or Okta</strong>. Prefer <strong>Start over</strong> (E1) for re-takes; use restore points for repairs.</p>
+<p><strong>Save your own restore point</strong> once Entra and Okta are connected, so a repair never costs you the connections:</p>
+<pre class="printout"><code>powershell -ExecutionPolicy Bypass -File .\vm-kit\Save-LabPoint.ps1 -Name Connected</code></pre>
+<p>Later, <code>Reset-Lab.ps1 -Snapshot Connected</code> brings back a VM that is still connected.</p>
+<h3 id="e3-keeping-the-connections-alive">E3. Keeping the connections alive</h3>
+<div class="table-wrap"><table><thead><tr><th>Connection</th><th>Expires</th><th>Fix</th></tr></thead><tbody><tr><td>Entra sign-in (Graph)</td><td>After about 90 days <strong>without use</strong></td><td>Run <code>Connect-Entra.ps1</code> again</td></tr><tr><td>Okta API token</td><td>After 30 days <strong>without use</strong></td><td>Create a new token, run <code>Set-OktaConnection.ps1</code> again</td></tr><tr><td>Windows Server evaluation</td><td>180 days</td><td>Rebuild, or extend the evaluation</td></tr></tbody></table></div>
+<p>Using the lab at least once a month keeps both cloud connections alive.</p>
+</section><section class="page manual-part" aria-labelledby="part-f--troubleshooting"><h2 id="part-f--troubleshooting" class="hand">Part F — Troubleshooting</h2>
+<div class="table-wrap"><table><thead><tr><th>Symptom</th><th>Cause</th><th>Fix</th></tr></thead><tbody><tr><td>VM very slow</td><td>Windows hypervisor is on under VirtualBox</td><td>Your choice (WSL2/Docker need it): turn off Memory integrity, <em>Virtual Machine Platform</em> and <em>Windows Hypervisor Platform</em>, run <code>bcdedit /set hypervisorlaunchtype off</code>, restart</td></tr><tr><td>VM froze (clock stopped, no response)</td><td>Host overload</td><td>VirtualBox → <em>Machine → Close → Power off</em>, then <strong>Start IAM Lab</strong>. The kit uses 2 CPUs to reduce this</td></tr><tr><td>vm-kit scripts fail with <code>VERR_DUPLICATE</code> or <code>Closing guest session ... VERR_TIMEOUT</code></td><td>After many hours of uptime, VirtualBox's helper in the VM stops closing its sessions</td><td>Run <code>vm-kit\Repair-LabGuestControl.ps1</code> on your PC, or restart the VM from its own Start menu</td></tr><tr><td>Start IAM Lab: "platform did not answer"</td><td>Platform task not started</td><td>Run <code>vm-kit\Update-Platform.ps1</code> on your PC, click Start again</td></tr><tr><td>Real Lab tiles say "Checking…" for a while</td><td>The VM is still starting services</td><td>Wait a minute and click <strong>Refresh</strong></td></tr><tr><td>Entra sign-in error <strong>530035</strong></td><td>Security Defaults blocks the device-code sign-in</td><td>Use <code>Connect-Entra.ps1</code> (browser sign-in), as in C3</td></tr><tr><td>"You'll need the Internet" during sign-in</td><td>Windows thinks the DC has no internet</td><td>Use <code>Connect-Entra.ps1</code>, which avoids that sign-in window</td></tr><tr><td>Connect Sync installer sign-in window is blank or blocked</td><td>IE Enhanced Security Configuration</td><td>Turn it off for Administrators during the install, then back on</td></tr><tr><td><code>RefreshCacheAsync ... does not have an implementation</code></td><td>ADSync and Microsoft Graph loaded in the same PowerShell window</td><td>Run ADSync commands in their own window</td></tr><tr><td>Okta signup refuses your email</td><td>Okta blocks free email providers</td><td>Use an address on a domain you own</td></tr><tr><td><code>Okta is not connected</code></td><td>Token not saved in the VM</td><td>Run <code>Set-OktaConnection.ps1</code> <strong>inside the VM</strong> (not on your PC)</td></tr><tr><td><code>The argument '.\vm-kit\Reset-Lab.ps1' ... does not exist</code></td><td>Ran a PC script inside the VM</td><td><code>vm-kit\*.ps1</code> run on your PC; <code>C:\IAM\Scripts\*</code> run in the VM</td></tr><tr><td>CA deploy: "No active Entra ID P1 or P2 licence"</td><td>Trial expired or never started</td><td>Buy P1 for one user, or use an E5 trial; or keep Phase 2 simulated</td></tr></tbody></table></div>
+</section><section class="page manual-part" aria-labelledby="part-g--safety-rules"><h2 id="part-g--safety-rules" class="hand">Part G — Safety rules</h2>
+<ul>
+<li>The platform listens on <code>127.0.0.1</code> inside the VM; nothing outside the VM can reach it.</li>
+<li>Lab scripts refuse to run unless the domain is <code>contoso.lab</code>, and refuse accounts outside <code>OU=Corp</code> or protected admin accounts.</li>
+<li>Scripts that change Entra or Okta <strong>preview</strong> unless you turn <strong>Apply</strong> on.</li>
+<li>Sign-ins and API tokens never pass through the web page; they are encrypted with Windows DPAPI for the VM's Administrator account.</li>
+<li>Scripts run as a domain admin because this is an isolated lab. Real automation should use a gMSA with only the rights it needs — the course teaches this.</li>
+<li>Use lab tenants only, never an employer's.</li>
+</ul>
+</section>
+    </main>
+  </div>
+  <footer class="rules">
+    <h2 class="hand">Lab rules</h2>
+    <p>Use your own free tenants, never an employer's. Preview before you apply. Keep secrets out of screenshots and out of Git. Everyone in the lab directory is fictional.</p>
+    <p class="small">IAM Lab From Zero To Hero, by Erick Omari. <a href="index.html#contact-title">Contact the author</a>.</p>
+  </footer>
+</body>
+</html>
